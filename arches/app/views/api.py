@@ -486,22 +486,36 @@ class Graphs(APIBase):
     def get(self, request, graph_id=None):
         perm = "read_nodegroup"
         datatypes = models.DDataType.objects.all()
-        graph = cache.get(f"graph_{graph_id}")
+        #graph = cache.get(f"graph_{graph_id}")
         user = request.user
-        if graph is None:
-            graph = Graph.objects.get(graphid=graph_id)
-        cards = CardProxyModel.objects.filter(graph_id=graph_id).order_by("sortorder")
-        permitted_cards = []
-        for card in cards:
-            if user.has_perm(perm, card.nodegroup):
-                card.filter_by_perm(user, perm)
-                permitted_cards.append(card)
-        cardwidgets = [
-            widget for widgets in [card.cardxnodexwidget_set.order_by("sortorder").all() for card in permitted_cards] for widget in widgets
-        ]
-        graph = JSONSerializer().serializeToPython(graph, sort_keys=False, exclude=["is_editable", "functions"])
-        permitted_cards = JSONSerializer().serializeToPython(permitted_cards, sort_keys=False, exclude=["is_editable"])
-        return JSONResponse({"datatypes": datatypes, "cards": permitted_cards, "graph": graph, "cardwidgets": cardwidgets})
+
+        graph = Graph.objects.get(graphid=graph_id)
+        graph = JSONSerializer().serializeToPython(graph, sort_keys=False, exclude=["is_editable", "functions", "cards"])
+        #cache.set(f"graph_{graph_id}", graph, settings.GRAPH_MODEL_CACHE_TIMEOUT)
+
+        cards = cache.get(f"cards_{graph_id}")
+        if cards is None:
+            cards = CardProxyModel.objects.filter(graph_id=graph_id).order_by("sortorder").prefetch_related("nodegroup")
+            cache.set(f"cards_{graph_id}", cards, settings.GRAPH_MODEL_CACHE_TIMEOUT)
+
+        cardwidgets = cache.get(f"cardwidgets_{user}_{graph_id}")
+        if cardwidgets is None:
+            permitted_cards = []
+            for card in cards:
+                if user.has_perm(perm, card.nodegroup):
+                    card.filter_by_perm(user, perm)
+                    permitted_cards.append(card)
+            cardwidgets = [
+                widget for widgets in [card.cardxnodexwidget_set.order_by("sortorder").all() for card in permitted_cards] for widget in widgets
+            ]
+            cache.set(f"cardwidgets_{user}_{graph_id}", JSONSerializer().serializeToPython(cardwidgets), settings.GRAPH_MODEL_CACHE_TIMEOUT)
+
+        permitted_cards_json = cache.get(f"cardsjson_{user}_{graph_id}")
+        if permitted_cards_json is None:
+            permitted_cards_json = JSONSerializer().serializeToPython(permitted_cards, sort_keys=False, exclude=["is_editable"])
+            cache.set(f"cardsjson_{user}_{graph_id}", permitted_cards_json, settings.GRAPH_MODEL_CACHE_TIMEOUT)
+
+        return JSONResponse({"datatypes": datatypes, "cards": permitted_cards_json, "graph": graph, "cardwidgets": cardwidgets})
 
 
 @method_decorator(csrf_exempt, name="dispatch")

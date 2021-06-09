@@ -1255,46 +1255,37 @@ class Graph(models.GraphModel):
         internal objects (like models.Nodes) don't support
 
         """
+
+        ret = cache.get(f"graph_{self.graphid}")
         exclude = [] if exclude is None else exclude
 
-        ret = JSONSerializer().handle_model(self, fields, exclude)
-        ret["root"] = self.root
-
-        if "relatable_resource_model_ids" not in exclude:
+        if ret is None:
+            ret = JSONSerializer().handle_model(self, fields, exclude)
+            ret["root"] = self.root
             ret["relatable_resource_model_ids"] = [str(relatable_node.graph_id) for relatable_node in self.root.get_relatable_resources()]
-        else:
-            ret.pop("relatable_resource_model_ids", None)
-
-        check_if_editable = "is_editable" not in exclude
-        ret["is_editable"] = self.is_editable() if check_if_editable else ret.pop("is_editable", None)
-        ret["cards"] = self.get_cards(check_if_editable=check_if_editable) if "cards" not in exclude else ret.pop("cards", None)
-
-        if "widgets" not in exclude:
+            ret["is_editable"] = self.is_editable()
+            ret["cards"] = self.get_cards()
             ret["widgets"] = self.get_widgets()
-        ret["nodegroups"] = self.get_nodegroups() if "nodegroups" not in exclude else ret.pop("nodegroups", None)
-        ret["domain_connections"] = (
-            self.get_valid_domain_ontology_classes() if "domain_connections" not in exclude else ret.pop("domain_connections", None)
-        )
-        ret["is_editable"] = self.is_editable() if "is_editable" not in exclude else ret.pop("is_editable", None)
-        ret["functions"] = (
-            models.FunctionXGraph.objects.filter(graph_id=self.graphid) if "functions" not in exclude else ret.pop("functions", None)
-        )
+            ret["nodegroups"] = self.get_nodegroups()
+            ret["domain_connections"] = self.get_valid_domain_ontology_classes()
+            ret["is_editable"] = self.is_editable()
+            ret["functions"] = models.FunctionXGraph.objects.filter(graph_id=self.graphid)
 
-        parentproperties = {self.root.nodeid: ""}
+            parentproperties = {self.root.nodeid: ""}
 
-        for edge_id, edge in self.edges.items():
-            parentproperties[edge.rangenode_id] = edge.ontologyproperty
+            for edge_id, edge in self.edges.items():
+                parentproperties[edge.rangenode_id] = edge.ontologyproperty
 
-        ret["edges"] = [edge for key, edge in self.edges.items()] if "edges" not in exclude else ret.pop("edges", None)
-
-        if "nodes" not in exclude:
+            ret["edges"] = [edge for key, edge in self.edges.items()]
             ret["nodes"] = []
             for key, node in self.nodes.items():
                 nodeobj = JSONSerializer().serializeToPython(node)
                 nodeobj["parentproperty"] = parentproperties[node.nodeid]
                 ret["nodes"].append(nodeobj)
-        else:
-            ret.pop("nodes", None)
+            cache.set(f"graph_{self.graphid}", ret, settings.GRAPH_MODEL_CACHE_TIMEOUT)
+
+        for item in exclude:
+            ret.pop(item, None)
 
         res = JSONSerializer().serializeToPython(ret)
 
