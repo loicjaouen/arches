@@ -486,12 +486,14 @@ class Graphs(APIBase):
     def get(self, request, graph_id=None):
         perm = "read_nodegroup"
         datatypes = models.DDataType.objects.all()
-        #graph = cache.get(f"graph_{graph_id}")
         user = request.user
 
-        graph = Graph.objects.get(graphid=graph_id)
-        graph = JSONSerializer().serializeToPython(graph, sort_keys=False, exclude=["is_editable", "functions", "cards"])
-        #cache.set(f"graph_{graph_id}", graph, settings.GRAPH_MODEL_CACHE_TIMEOUT)
+        graph = cache.get(f"graph_{graph_id}")
+        if graph is None:
+            graph = Graph.objects.get(graphid=graph_id)
+            graph = JSONSerializer().serializeToPython(graph, sort_keys=False)
+        for exclude in ["is_editable", "functions", "cards"]:
+            graph.pop(exclude, None)
 
         cards = cache.get(f"cards_{graph_id}")
         if cards is None:
