@@ -16,13 +16,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
-from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm
 from arches.app.models import models
+from arches.app.models.system_settings import settings
 from arches.app.utils.betterJSONSerializer import JSONSerializer
-from django.core.cache import cache
+
 
 
 class Card(models.CardModel):
@@ -238,26 +240,26 @@ class Card(models.CardModel):
 
         """
 
+        ret = cache.get(f"card_{self.cardid}")
         exclude = [] if exclude is None else exclude
-        ret = JSONSerializer().handle_model(self, fields, exclude)
+        if ret is None:
+            ret = JSONSerializer().handle_model(self, fields, exclude)            
+            ret["cardinality"] = self.cardinality
+            ret["cards"] = self.cards 
+            ret["nodes"] = list(self.nodegroup.node_set.all()) 
+            ret["visible"] = self.visible 
+            ret["active"] = self.active 
+            ret["is_editable"] = self.is_editable() 
+            ret["ontologyproperty"] = self.ontologyproperty 
+            ret["disabled"] = self.disabled 
+            ret["constraints"] = self.constraints 
+            if self.graph and self.graph.ontology and self.graph.isresource:
+                edge = self.get_edge_to_parent()
+                ret["ontologyproperty"] = edge.ontologyproperty
 
-        ret["cardinality"] = self.cardinality if "cardinality" not in exclude else ret.pop("cardinality", None)
-        ret["cards"] = self.cards if "cards" not in exclude else ret.pop("cards", None)
-        ret["nodes"] = list(self.nodegroup.node_set.all()) if "nodes" not in exclude else ret.pop("nodes", None)
-        ret["visible"] = self.visible if "visible" not in exclude else ret.pop("visible", None)
-        ret["active"] = self.active if "active" not in exclude else ret.pop("active", None)
-        ret["is_editable"] = self.is_editable() if "is_editable" not in exclude else ret.pop("is_editable", None)
-        ret["ontologyproperty"] = self.ontologyproperty if "ontologyproperty" not in exclude else ret.pop("ontologyproperty", None)
-        ret["disabled"] = self.disabled if "disabled" not in exclude else ret.pop("disabled", None)
-        ret["constraints"] = self.constraints if "constraints" not in exclude else ret.pop("constraints", None)
-        if self.graph and self.graph.ontology and self.graph.isresource:
-            edge = self.get_edge_to_parent()
-            ret["ontologyproperty"] = edge.ontologyproperty
-
-        # provide a models.CardXNodeXWidget model for every node
-        # even if a widget hasn't been configured
-        ret["widgets"] = self.widgets
-        if "widgets" not in exclude:
+            # provide a models.CardXNodeXWidget model for every node
+            # even if a widget hasn't been configured
+            ret["widgets"] = self.widgets
             for node in ret["nodes"]:
                 found = False
                 for widget in ret["widgets"]:
@@ -273,8 +275,11 @@ class Card(models.CardModel):
                         widget_model.config = JSONSerializer().serialize(widget.defaultconfig)
                         widget_model.label = node.name
                         ret["widgets"].append(widget_model)
-        else:
-            ret.pop("widgets", None)
+
+            cache.set(f"card_{self.cardid}", ret, settings.GRAPH_MODEL_CACHE_TIMEOUT)
+
+        for item in exclude:
+            ret.pop(item, None)
 
         return ret
 
