@@ -471,6 +471,7 @@ class Node(models.Model):
     sortorder = models.IntegerField(blank=True, null=True, default=0)
     fieldname = models.TextField(blank=True, null=True)
     exportable = models.BooleanField(default=False, null=True)
+    alias = models.TextField(blank=True, null=True)
 
     def get_child_nodes_and_edges(self):
         """
