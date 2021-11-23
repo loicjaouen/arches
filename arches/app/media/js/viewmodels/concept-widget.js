@@ -1,7 +1,8 @@
 define([
+    'knockout',
     'viewmodels/remote-domain-widget',
     'arches'
-], function (RemoteDomainWidgetViewModel, arches) {
+], function (ko, RemoteDomainWidgetViewModel, arches) {
     /**
     * A viewmodel used for concept widgets
     *
@@ -30,6 +31,9 @@ define([
             }
         };
 
+        if (!ko.isObservable(this.node.config.rdmCollection)) {
+            this.node.config.rdmCollection = ko.observable(this.node.config.rdmCollection);
+        }
         this.node.config.rdmCollection.subscribe(setUrl);
         setUrl(this.node.config.rdmCollection());
     };
