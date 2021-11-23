@@ -2,7 +2,7 @@ define([
     'knockout',
     'viewmodels/remote-domain-widget',
     'arches'
-], function (ko, RemoteDomainWidgetViewModel, arches) {
+], function(ko, RemoteDomainWidgetViewModel, arches) {
     /**
     * A viewmodel used for concept widgets
     *
@@ -15,19 +15,19 @@ define([
         var self = this;
 
         params.prepData = function(data) {
-            data.forEach(function (record) {
+            data.forEach(function(record) {
                 if (record.collector) {
                     record.id = undefined;
                 }
-            })
+            });
             return data;
-        }
+        };
 
         RemoteDomainWidgetViewModel.apply(this, [params]);
 
-        var setUrl = function (id) {
+        var setUrl = function(id) {
             if (id) {
-                self.url(arches.urls.dropdown + '?conceptid=' + id)
+                self.url(arches.urls.dropdown + '?conceptid=' + id);
             }
         };
 
