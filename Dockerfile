@@ -72,9 +72,8 @@ RUN set -ex \
         python3.10-distutils \
         python3.10-venv \
         postgresql-client-12 \
-        python3.8 \
-        python3.8-distutils \
-        python3.8-venv \
+        nodejs \
+        npm \
     " \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends curl \
