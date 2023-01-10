@@ -30,17 +30,16 @@ RUN set -ex \
         docbook-mathml \
         libgdal-dev \
         libpq-dev \
-        python3.8 \
-        python3.8-dev \
+        python3.10 \
+        python3-pip \
+        python3.10-dev \
         curl \
-        python3.8-distutils \
+        python3.10-distutils \
         libldap2-dev libsasl2-dev ldap-utils \
         dos2unix \
         " \
     && apt-get update -y \
-    && apt-get install -y --no-install-recommends $BUILD_DEPS \
-    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python3.8 get-pip.py
+    && apt-get install -y --no-install-recommends $BUILD_DEPS
 
 RUN pip3 wheel --no-cache-dir -b /tmp -r ${WHEELS}/requirements.txt  \
     && pip3 wheel --no-cache-dir -b /tmp -r ${WHEELS}/requirements_dev.txt  \
@@ -52,7 +51,7 @@ COPY docker/entrypoint.sh ${WHEELS}/entrypoint.sh
 RUN chmod -R 700 ${WHEELS} &&\
   dos2unix ${WHEELS}/*.sh
 
-FROM base 
+FROM base
 
 # Get the pre-built python wheels from the build environment
 RUN mkdir ${WEB_ROOT}
@@ -68,7 +67,10 @@ RUN set -ex \
     && RUN_DEPS=" \
         mime-support \
         libgdal-dev \
-        python3-venv \
+        python3.10 \
+        python3-pip \
+        python3.10-distutils \
+        python3.10-venv \
         postgresql-client-12 \
         python3.8 \
         python3.8-distutils \
@@ -80,9 +82,6 @@ RUN set -ex \
     && add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -sc)-pgdg main" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $RUN_DEPS \
-    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python3.8 get-pip.py \
-    && apt-get install -y nodejs \
     && npm install -g yarn
 
 # Install Yarn components
@@ -98,7 +97,7 @@ WORKDIR ${WEB_ROOT}
 
 RUN mv ${WHEELS}/entrypoint.sh entrypoint.sh
 
-RUN python3.8 -m venv ENV \
+RUN python3.10 -m venv ENV \
     && . ENV/bin/activate \
     && pip install requests \
     && pip install -f ${WHEELS} django-auth-ldap \
