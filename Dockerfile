@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as base 
+FROM ubuntu:22.04 as base
 USER root
 
 ## Setting default environment variables
