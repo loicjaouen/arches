@@ -27,7 +27,7 @@ else
 fi
 
 # Read modules folder from yarn config file
-# Get string after '--install.modules-folder' -> get first word of the result 
+# Get string after '--install.modules-folder' -> get first word of the result
 # -> remove line endlings -> trim quotes -> trim leading ./
 YARN_MODULES_FOLDER=${PACKAGE_JSON_FOLDER}/$(awk \
 	-F '--install.modules-folder' '{print $2}' ${PACKAGE_JSON_FOLDER}/.yarnrc \
@@ -311,6 +311,15 @@ collect_static(){
 	echo ""
 	cd_app_folder
 	python manage.py collectstatic --noinput
+    # did collectstatic miss the packages?
+	echo ""
+	echo " checking JS packages"
+    if [[ ! -d ${STATIC_ROOT}/packages ]]; then
+        echo " missing packages files, copying them from ${APP_FOLDER}/arches/install/arches/app/media/packages to ${STATIC_ROOT}/"
+        cp -R ${APP_FOLDER}/arches/install/arches/app/media/packages ${STATIC_ROOT}/
+    else
+        echo "packages forlder is there: ${STATIC_ROOT}/packages    "
+    fi
 }
 
 
@@ -330,7 +339,7 @@ run_gunicorn_server() {
 	echo "----- *** RUNNING GUNICORN PRODUCTION SERVER *** -----"
 	echo ""
 	cd_app_folder
-	
+
 	if [[ ! -z ${ARCHES_PROJECT} ]]; then
         gunicorn arches.wsgi:application \
             --config ${ARCHES_ROOT}/gunicorn_config.py \
