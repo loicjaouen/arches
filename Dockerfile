@@ -42,10 +42,10 @@ RUN set -ex \
     && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3.8 get-pip.py
 
-RUN pip3 wheel --no-cache-dir -b /tmp -r ${WHEELS}/requirements.txt  \
-    && pip3 wheel --no-cache-dir -b /tmp -r ${WHEELS}/requirements_dev.txt  \
-    && pip3 wheel --no-cache-dir -b /tmp gunicorn \
-    && pip3 wheel --no-cache-dir -b /tmp django-auth-ldap
+RUN pip3 wheel --no-cache-dir -r ${WHEELS}/requirements.txt  \
+    && pip3 wheel --no-cache-dir -r ${WHEELS}/requirements_dev.txt  \
+    && pip3 wheel --no-cache-dir gunicorn \
+    && pip3 wheel --no-cache-dir django-auth-ldap
 
 # Add Docker-related files
 COPY docker/entrypoint.sh ${WHEELS}/entrypoint.sh
