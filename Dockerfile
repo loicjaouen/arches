@@ -86,9 +86,9 @@ RUN set -ex \
     && npm install -g yarn
 
 # Install Yarn components
-COPY ./arches/install/arches-templates/project_name/package.json ${ARCHES_ROOT}/arches/install/package.json
-COPY ./arches/install/arches-templates/project_name/.yarnrc  ${ARCHES_ROOT}/arches/install/.yarnrc
-COPY ./tests/fixtures/testing_prj/testing_prj/yarn.lock  ${ARCHES_ROOT}/arches/install/yarn.lock
+COPY ./package.json ${ARCHES_ROOT}/arches/install/package.json
+COPY ./.yarnrc  ${ARCHES_ROOT}/arches/install/.yarnrc
+COPY ./yarn.lock  ${ARCHES_ROOT}/arches/install/yarn.lock
 WORKDIR ${ARCHES_ROOT}/arches/install
 RUN mkdir -p ${ARCHES_ROOT}/arches/app/media/node_modules
 RUN yarn install
