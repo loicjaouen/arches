@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as base 
+FROM ubuntu:18.04 as base
 USER root
 
 ## Setting default environment variables
@@ -52,7 +52,7 @@ COPY docker/entrypoint.sh ${WHEELS}/entrypoint.sh
 RUN chmod -R 700 ${WHEELS} &&\
   dos2unix ${WHEELS}/*.sh
 
-FROM base 
+FROM base
 
 # Get the pre-built python wheels from the build environment
 RUN mkdir ${WEB_ROOT}
@@ -86,9 +86,9 @@ RUN set -ex \
     && npm install -g yarn
 
 # Install Yarn components
-COPY ./arches/install/package.json ${ARCHES_ROOT}/arches/install/package.json
-COPY ./arches/install/.yarnrc ${ARCHES_ROOT}/arches/install/.yarnrc
-COPY ./arches/install/yarn.lock ${ARCHES_ROOT}/arches/install/yarn.lock
+COPY ./arches/install/arches-templates/project_name/package.json ${ARCHES_ROOT}/arches/install/package.json
+COPY ./arches/install/arches-templates/project_name/.yarnrc  ${ARCHES_ROOT}/arches/install/.yarnrc
+COPY ./tests/fixtures/testing_prj/testing_prj/yarn.lock  ${ARCHES_ROOT}/arches/install/yarn.lock
 WORKDIR ${ARCHES_ROOT}/arches/install
 RUN mkdir -p ${ARCHES_ROOT}/arches/app/media/node_modules
 RUN yarn install
