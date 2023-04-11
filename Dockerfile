@@ -31,6 +31,7 @@ RUN set -ex \
         libgdal-dev \
         libpq-dev \
         python3.8 \
+        python3-pip \
         python3.8-dev \
         curl \
         python3.8-distutils \
@@ -38,9 +39,7 @@ RUN set -ex \
         dos2unix \
         " \
     && apt-get update -y \
-    && apt-get install -y --no-install-recommends $BUILD_DEPS \
-    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python3.8 get-pip.py
+    && apt-get install -y --no-install-recommends $BUILD_DEPS
 
 RUN pip3 wheel --no-cache-dir -r ${WHEELS}/requirements.txt  \
     && pip3 wheel --no-cache-dir -r ${WHEELS}/requirements_dev.txt  \
@@ -71,6 +70,7 @@ RUN set -ex \
         python3-venv \
         postgresql-client-12 \
         python3.8 \
+        python3-pip \
         python3.8-distutils \
         python3.8-venv \
     " \
@@ -80,8 +80,6 @@ RUN set -ex \
     && add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -sc)-pgdg main" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $RUN_DEPS \
-    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python3.8 get-pip.py \
     && apt-get install -y nodejs \
     && npm install -g yarn
 
