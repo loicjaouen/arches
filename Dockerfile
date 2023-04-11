@@ -30,11 +30,11 @@ RUN set -ex \
         docbook-mathml \
         libgdal-dev \
         libpq-dev \
-        python3.8 \
+        python3.11 \
         python3-pip \
-        python3.8-dev \
+        python3.11-dev \
         curl \
-        python3.8-distutils \
+        python3.11-distutils \
         libldap2-dev libsasl2-dev ldap-utils \
         dos2unix \
         " \
@@ -69,10 +69,10 @@ RUN set -ex \
         libgdal-dev \
         python3-venv \
         postgresql-client-12 \
-        python3.8 \
+        python3.11 \
         python3-pip \
-        python3.8-distutils \
-        python3.8-venv \
+        python3.11-distutils \
+        python3.11-venv \
     " \
     && apt-get install -y --no-install-recommends curl \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
@@ -96,7 +96,7 @@ WORKDIR ${WEB_ROOT}
 
 RUN mv ${WHEELS}/entrypoint.sh entrypoint.sh
 
-RUN python3.8 -m venv ENV \
+RUN python3.11 -m venv ENV \
     && . ENV/bin/activate \
     && pip install requests \
     && pip install -f ${WHEELS} django-auth-ldap \
