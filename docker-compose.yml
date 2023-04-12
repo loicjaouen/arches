@@ -81,7 +81,6 @@ services:
       environment:
         - TZ=PST
         - discovery.type=single-node
-        - discovery.seed_hosts=
         - "ES_JAVA_OPTS=-Xms400m -Xmx400m"
 
     letsencrypt:
