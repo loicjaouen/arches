@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as base
+FROM ubuntu:22.04 as base
 USER root
 
 ## Setting default environment variables
@@ -30,11 +30,11 @@ RUN set -ex \
         docbook-mathml \
         libgdal-dev \
         libpq-dev \
-        python3.11 \
+        python3.10 \
         python3-pip \
-        python3.11-dev \
+        python3.10-dev \
         curl \
-        python3.11-distutils \
+        python3.10-distutils \
         libldap2-dev libsasl2-dev ldap-utils \
         dos2unix \
         " \
@@ -69,10 +69,10 @@ RUN set -ex \
         libgdal-dev \
         python3-venv \
         postgresql-client-12 \
-        python3.11 \
+        python3.10 \
         python3-pip \
-        python3.11-distutils \
-        python3.11-venv \
+        python3.10-distutils \
+        python3.10-venv \
     " \
     && apt-get install -y --no-install-recommends curl \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
@@ -96,7 +96,7 @@ WORKDIR ${WEB_ROOT}
 
 RUN mv ${WHEELS}/entrypoint.sh entrypoint.sh
 
-RUN python3.11 -m venv ENV \
+RUN python3.10 -m venv ENV \
     && . ENV/bin/activate \
     && pip install requests \
     && pip install -f ${WHEELS} django-auth-ldap \
