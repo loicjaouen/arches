@@ -72,7 +72,7 @@ services:
 
     elasticsearch:
       container_name: elasticsearch
-      image: elasticsearch:7.5.1
+      image: elasticsearch:8.7.0
       volumes:
         - elasticsearch-data:/usr/share/elasticsearch/data
       ports:
