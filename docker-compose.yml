@@ -76,6 +76,7 @@ services:
       image: elasticsearch:8.7.0
       volumes:
         - elasticsearch-data:/usr/share/elasticsearch/data
+        - ./docker/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       ports:
         - "9200:9200"
         - "9300:9300"
