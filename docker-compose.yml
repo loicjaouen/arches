@@ -3,7 +3,7 @@ services:
 
     arches:
       container_name: arches
-      image: getty/arches:5.0
+      image: local/arches:7.3.0
       build:
         context: .
         dockerfile: ./Dockerfile

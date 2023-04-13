@@ -51,12 +51,12 @@ COPY docker/entrypoint.sh ${WHEELS}/entrypoint.sh
 RUN chmod -R 700 ${WHEELS} &&\
   dos2unix ${WHEELS}/*.sh
 
-FROM base
+FROM base as arches_base
 
 # Get the pre-built python wheels from the build environment
 RUN mkdir ${WEB_ROOT}
 
-COPY --from=wheelbuilder ${WHEELS} /wheels
+COPY --from=wheelbuilder ${WHEELS} ${WHEELS}
 
 # Install packages required to run Arches
 # Note that the ubuntu/debian package for libgdal1-dev pulls in libgdal1i, which is built
@@ -98,15 +98,17 @@ RUN mv ${WHEELS}/entrypoint.sh entrypoint.sh
 
 RUN python3.10 -m venv ENV \
     && . ENV/bin/activate \
-    && pip install requests \
-    && pip install -f ${WHEELS} django-auth-ldap \
-    && pip install -f ${WHEELS} gunicorn \
-    && pip install -r ${WHEELS}/requirements.txt \
-                   -f ${WHEELS} \
-    && pip install -r ${WHEELS}/requirements_dev.txt \
-                   -f ${WHEELS} \
+    && pip3 install requests \
+    && pip3 install -f ${WHEELS} django-auth-ldap \
+    && pip3 install -f ${WHEELS} gunicorn \
+    && pip3 install -r ${WHEELS}/requirements.txt \
+                    -f ${WHEELS} \
+    && pip3 install -r ${WHEELS}/requirements_dev.txt \
+                    -f ${WHEELS} \
     && rm -rf ${WHEELS} \
     && rm -rf /root/.cache/pip/*
+
+FROM arches_base as arches_app
 
 # Install the Arches application
 # FIXME: ADD from github repository instead?
@@ -117,6 +119,8 @@ WORKDIR ${ARCHES_ROOT}
 
 RUN . ../ENV/bin/activate \
     && pip install -e . --no-binary :all:
+
+FROM arches_app
 
 # Set default workdir
 WORKDIR ${ARCHES_ROOT}
